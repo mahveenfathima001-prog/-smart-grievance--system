@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #f1f5f9;
+        }
+        .header {
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h2 { margin: 0; }
+        .header-links { display: flex; gap: 10px; }
+        .header-links a {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .header-links a:hover { background: rgba(255,255,255,0.3); }
+
+        /* Stat cards */
+        .stats {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            min-width: 150px;
+        }
+        .stat-card h2 {
+            margin: 0;
+            font-size: 32px;
+            color: #1e3c72;
+        }
+        .stat-card p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 13px;
+        }
+        .stat-card.green h2 { color: #2ecc71; }
+        .stat-card.blue  h2 { color: #3498db; }
+        .stat-card.red   h2 { color: #e74c3c; }
+
+        /* Charts grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 20px;
+            margin: 0 20px 20px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .chart-card h3 {
+            margin: 0 0 15px;
+            color: #1e3c72;
+            font-size: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        /* Full width chart */
+        .chart-full {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin: 0 20px 20px;
+        }
+        .chart-full h3 {
+            margin: 0 0 15px;
+            color: #1e3c72;
+            font-size: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin: 20px;
+            text-decoration: none;
+            color: #1e3c72;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h2>📈 Analytics Dashboard</h2>
+    <div class="header-links">
+        <a href="/admin">📋 Complaints</a>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats">
+    <div class="stat-card">
+        <h2>{{ total }}</h2>
+        <p>Total Complaints</p>
+    </div>
+
+    <!-- Pending count -->
+    <div class="stat-card red">
+        <h2 id="pending-count">—</h2>
+        <p>🟡 Pending</p>
+    </div>
+
+    <!-- In Progress count -->
+    <div class="stat-card blue">
+        <h2 id="inprogress-count">—</h2>
+        <p>⚙️ In Progress</p>
+    </div>
+
+    <!-- Resolved count -->
+    <div class="stat-card green">
+        <h2 id="resolved-count">—</h2>
+        <p>✅ Resolved</p>
+    </div>
+</div>
+
+<!-- Daily Trend — full width -->
+<div class="chart-full">
+    <h3>📅 Daily Complaints (Last 7 Days)</h3>
+    <canvas id="dailyChart" height="80"></canvas>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+
+    <div class="chart-card">
+        <h3>🗂 Complaints by Category</h3>
+        <canvas id="categoryChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>😊 Complaints by Sentiment</h3>
+        <canvas id="sentimentChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>📋 Complaints by Status</h3>
+        <canvas id="statusChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>🌐 Complaints by Language</h3>
+        <canvas id="languageChart"></canvas>
+    </div>
+
+</div>
+
+<a class="back" href="/admin">⬅ Back to Dashboard</a>
+
+<script>
+// ---- Data from Flask ----
+const catLabels  = {{ cat_labels  | safe }};
+const catData    = {{ cat_data    | safe }};
+const sentLabels = {{ sent_labels | safe }};
+const sentData   = {{ sent_data   | safe }};
+const statLabels = {{ stat_labels | safe }};
+const statData   = {{ stat_data   | safe }};
+const langLabels = {{ lang_labels | safe }};
+const langData   = {{ lang_data   | safe }};
+const dailyLabels= {{ daily_labels| safe }};
+const dailyData  = {{ daily_data  | safe }};
+
+// ---- Fill stat cards from status data ----
+statLabels.forEach((label, i) => {
+    if (label === 'Pending')     document.getElementById('pending-count').textContent    = statData[i];
+    if (label === 'In Progress') document.getElementById('inprogress-count').textContent = statData[i];
+    if (label === 'Resolved')    document.getElementById('resolved-count').textContent   = statData[i];
+});
+
+// ---- Color palettes ----
+const categoryColors = ['#3498db','#e74c3c','#2ecc71','#f39c12','#9b59b6'];
+const sentimentColors = {
+    'Urgent 🔴':   '#e74c3c',
+    'Neutral 🟡':  '#f39c12',
+    'Positive 😊': '#2ecc71'
+};
+const statusColors = {
+    'Pending':     '#f39c12',
+    'In Progress': '#3498db',
+    'Resolved':    '#2ecc71'
+};
+const langColors = ['#1e3c72','#e74c3c','#2ecc71','#9b59b6','#f39c12'];
+
+// ---- 1. Daily Trend Line Chart ----
+new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+        labels: dailyLabels,
+        datasets: [{
+            label: 'Complaints',
+            data: dailyData,
+            borderColor: '#1e3c72',
+            backgroundColor: 'rgba(30,60,114,0.1)',
+            borderWidth: 2,
+            pointBackgroundColor: '#1e3c72',
+            pointRadius: 5,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// ---- 2. Category Bar Chart ----
+new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+        labels: catLabels,
+        datasets: [{
+            label: 'Complaints',
+            data: catData,
+            backgroundColor: categoryColors,
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+
+// ---- 3. Sentiment Pie Chart ----
+new Chart(document.getElementById('sentimentChart'), {
+    type: 'doughnut',
+    data: {
+        labels: sentLabels,
+        datasets: [{
+            data: sentData,
+            backgroundColor: sentLabels.map(l => sentimentColors[l] || '#999'),
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Poppins' } } }
+        }
+    }
+});
+
+// ---- 4. Status Doughnut Chart ----
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: statLabels,
+        datasets: [{
+            data: statData,
+            backgroundColor: statLabels.map(l => statusColors[l] || '#999'),
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Poppins' } } }
+        }
+    }
+});
+
+// ---- 5. Language Bar Chart ----
+new Chart(document.getElementById('languageChart'), {
+    type: 'bar',
+    data: {
+        labels: langLabels,
+        datasets: [{
+            label: 'Complaints',
+            data: langData,
+            backgroundColor: langColors,
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+
+</body>
+</html>

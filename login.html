@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login — Grievance Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-ribbon {
+            background: #1a3a6b;
+            color: white;
+            font-size: 12px;
+            padding: 4px 20px;
+            text-align: center;
+        }
+        .header {
+            background: white;
+            border-bottom: 4px solid #f77f00;
+            padding: 12px 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header-emblem {
+            width: 56px; height: 56px;
+            background: #1a3a6b;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .header-text h1 { font-size: 18px; color: #1a3a6b; font-weight: 700; }
+        .header-text p  { font-size: 12px; color: #777; }
+
+        .login-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .login-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 400px;
+            overflow: hidden;
+        }
+        .login-card-header {
+            background: #1a3a6b;
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+        }
+        .login-card-header h2 { font-size: 18px; margin-bottom: 4px; }
+        .login-card-header p  { font-size: 12px; opacity: 0.8; }
+        .login-card-body { padding: 28px 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Noto Sans', sans-serif;
+            transition: border 0.2s;
+        }
+        .form-control:focus {
+            border-color: #1a3a6b;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26,58,107,0.1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #f77f00;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans', sans-serif;
+            transition: 0.2s;
+        }
+        .submit-btn:hover { background: #e65100; }
+        .error-box {
+            background: #fdecea;
+            border-left: 4px solid #d32f2f;
+            padding: 10px 14px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            color: #c62828;
+            margin-bottom: 16px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1a3a6b;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .footer {
+            background: #1a3a6b;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 12px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-ribbon">🇮🇳 Government of Telangana — Public Grievance Portal</div>
+
+<div class="header">
+    <div class="header-emblem">🏛</div>
+    <div class="header-text">
+        <h1>Public Grievance Redressal Portal</h1>
+        <p>Government of Telangana — Smart City Initiative</p>
+    </div>
+</div>
+
+<div class="login-wrap">
+    <div class="login-card">
+        <div class="login-card-header">
+            <h2>🔐 Admin Login</h2>
+            <p>Authorized Personnel Only</p>
+        </div>
+        <div class="login-card-body">
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="error-box">{{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" class="form-control"
+                           placeholder="Enter admin username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="submit-btn">Login →</button>
+            </form>
+
+            <a class="back-link" href="/">← Back to Grievance Portal</a>
+        </div>
+    </div>
+</div>
+
+<div class="footer">© 2024 Government of Telangana | Public Grievance Redressal Portal</div>
+
+</body>
+</html>

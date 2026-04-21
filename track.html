@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Complaint — Grievance Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=Noto+Sans+Telugu&family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans', sans-serif; background: #f0f4f8; min-height: 100vh; }
+        .top-ribbon {
+            background: #1a3a6b; color: white;
+            font-size: 12px; padding: 4px 20px;
+            display: flex; justify-content: space-between;
+        }
+        .top-ribbon a { color: #ffd700; text-decoration: none; }
+        .header {
+            background: white; border-bottom: 4px solid #f77f00;
+            padding: 12px 30px; display: flex; align-items: center;
+            gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header-emblem {
+            width: 56px; height: 56px; background: #1a3a6b;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 24px;
+        }
+        .header-text h1 { font-size: 18px; color: #1a3a6b; font-weight: 700; }
+        .header-text p  { font-size: 12px; color: #777; }
+        .navbar {
+            background: #1a3a6b; padding: 0 30px; display: flex;
+        }
+        .navbar a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            padding: 12px 18px; font-size: 13px;
+            border-bottom: 3px solid transparent; transition: 0.2s;
+        }
+        .navbar a:hover, .navbar a.active {
+            color: #ffd700; border-bottom-color: #ffd700;
+        }
+        .page-body { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .breadcrumb { font-size: 12px; color: #666; margin-bottom: 16px; }
+        .breadcrumb span { color: #1a3a6b; }
+
+        /* Search card */
+        .search-card {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: #1a3a6b; color: white;
+            padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .card-header h2 { font-size: 15px; font-weight: 600; }
+        .card-body { padding: 20px; }
+
+        .search-row { display: flex; gap: 10px; }
+        .form-control {
+            flex: 1; padding: 10px 14px;
+            border: 1px solid #ccc; border-radius: 4px;
+            font-size: 14px; font-family: 'Noto Sans', sans-serif;
+        }
+        .form-control:focus {
+            border-color: #1a3a6b; outline: none;
+            box-shadow: 0 0 0 3px rgba(26,58,107,0.1);
+        }
+        .search-btn {
+            padding: 10px 20px; background: #f77f00;
+            border: none; border-radius: 4px; color: white;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            font-family: 'Noto Sans', sans-serif; white-space: nowrap;
+        }
+        .search-btn:hover { background: #e65100; }
+
+        /* Error */
+        .error-box {
+            background: #fdecea; border-left: 4px solid #d32f2f;
+            padding: 12px 16px; border-radius: 0 6px 6px 0;
+            font-size: 13px; color: #c62828; margin-top: 12px;
+        }
+
+        /* Result card */
+        .result-card {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;
+        }
+
+        /* Stepper */
+        .stepper-wrap { padding: 24px 20px; background: #f8fafc; border-bottom: 1px solid #eee; }
+        .stepper { display: flex; align-items: center; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+        .step-circle {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: #e0e0e0; border: 3px solid #ccc;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; color: #999;
+        }
+        .step-circle.done    { background: #1a3a6b; border-color: #1a3a6b; color: white; }
+        .step-circle.active  { background: #f77f00; border-color: #f77f00; color: white; }
+        .step-label { font-size: 12px; color: #666; font-weight: 500; text-align: center; }
+        .step-label.done   { color: #1a3a6b; font-weight: 600; }
+        .step-label.active { color: #f77f00; font-weight: 600; }
+        .step-line { flex: 1; height: 3px; background: #e0e0e0; margin-bottom: 22px; }
+        .step-line.done { background: #1a3a6b; }
+
+        /* Details */
+        .details-wrap { padding: 20px; }
+        .detail-row {
+            display: flex; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #666; font-weight: 500; }
+        .detail-value { color: #222; font-weight: 600; text-align: right; max-width: 60%; font-family: 'Noto Sans Devanagari','Noto Sans Telugu','Noto Sans',sans-serif; }
+
+        .status-pill {
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; color: white;
+        }
+        .pill-pending   { background: #f77f00; }
+        .pill-progress  { background: #1565c0; }
+        .pill-resolved  { background: #2e7d32; }
+
+        .footer {
+            background: #1a3a6b; color: rgba(255,255,255,0.7);
+            text-align: center; padding: 14px; font-size: 12px; margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-ribbon">
+    <span>🇮🇳 Government of Telangana — Public Grievance Portal</span>
+    <a href="/">Submit Complaint</a>
+</div>
+
+<div class="header">
+    <div class="header-emblem">🏛</div>
+    <div class="header-text">
+        <h1>Public Grievance Redressal Portal</h1>
+        <p>Government of Telangana — Smart City Initiative</p>
+    </div>
+</div>
+
+<div class="navbar">
+    <a href="/">🏠 Home</a>
+    <a href="/track" class="active">🔍 Track Complaint</a>
+    <a href="/admin">🔐 Admin Login</a>
+</div>
+
+<div class="page-body">
+
+    <div class="breadcrumb">
+        Home → <span>Track Complaint</span>
+    </div>
+
+    <!-- Search -->
+    <div class="search-card">
+        <div class="card-header">
+            <span>🔍</span>
+            <h2>Track Your Grievance Status</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="search-row">
+                    <input type="text" name="complaint_id"
+                           class="form-control"
+                           placeholder="Enter your Complaint ID (e.g. 5)" required>
+                    <button type="submit" class="search-btn">Track →</button>
+                </div>
+            </form>
+            {% if error %}
+                <div class="error-box">{{ error }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Result -->
+    {% if complaint %}
+    <div class="result-card">
+
+        <!-- Stepper -->
+        <div class="stepper-wrap">
+            <div class="stepper">
+                <div class="step">
+                    <div class="step-circle done">✓</div>
+                    <div class="step-label done">Submitted</div>
+                </div>
+                <div class="step-line done"></div>
+
+                <div class="step">
+                    <div class="step-circle {% if complaint[8] in ['In Progress','Resolved'] %}done{% elif complaint[8] == 'Pending' %}{% else %}done{% endif %}">
+                        {% if complaint[8] in ['In Progress','Resolved'] %}✓{% else %}2{% endif %}
+                    </div>
+                    <div class="step-label {% if complaint[8] in ['In Progress','Resolved'] %}done{% endif %}">
+                        Pending
+                    </div>
+                </div>
+                <div class="step-line {% if complaint[8] in ['In Progress','Resolved'] %}done{% endif %}"></div>
+
+                <div class="step">
+                    <div class="step-circle {% if complaint[8] == 'In Progress' %}active{% elif complaint[8] == 'Resolved' %}done{% endif %}">
+                        {% if complaint[8] == 'Resolved' %}✓{% else %}3{% endif %}
+                    </div>
+                    <div class="step-label {% if complaint[8] == 'In Progress' %}active{% elif complaint[8] == 'Resolved' %}done{% endif %}">
+                        In Progress
+                    </div>
+                </div>
+                <div class="step-line {% if complaint[8] == 'Resolved' %}done{% endif %}"></div>
+
+                <div class="step">
+                    <div class="step-circle {% if complaint[8] == 'Resolved' %}done{% endif %}">
+                        {% if complaint[8] == 'Resolved' %}✓{% else %}4{% endif %}
+                    </div>
+                    <div class="step-label {% if complaint[8] == 'Resolved' %}done{% endif %}">
+                        Resolved
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="details-wrap">
+            <div class="detail-row">
+                <span class="detail-label">Complaint ID</span>
+                <span class="detail-value">#{{ complaint[0] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Title</span>
+                <span class="detail-value">{{ complaint[1] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Category</span>
+                <span class="detail-value">{{ complaint[3] }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Submitted On</span>
+                <span class="detail-value">{{ complaint[9] or 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ complaint[10] or 'Not provided' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Current Status</span>
+                <span class="detail-value">
+                    {% if complaint[8] == 'Resolved' %}
+                        <span class="status-pill pill-resolved">✅ Resolved</span>
+                    {% elif complaint[8] == 'In Progress' %}
+                        <span class="status-pill pill-progress">⚙️ In Progress</span>
+                    {% else %}
+                        <span class="status-pill pill-pending">🟡 Pending</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+<div class="footer">© 2024 Government of Telangana | Public Grievance Redressal Portal</div>
+
+</body>
+</html>

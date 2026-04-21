@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Duplicate Complaints — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans', sans-serif; background: #f0f4f8; }
+        .top-ribbon {
+            background: #1a3a6b; color: white;
+            font-size: 12px; padding: 4px 20px; text-align: center;
+        }
+        .header {
+            background: white; border-bottom: 4px solid #f77f00;
+            padding: 12px 30px; display: flex; align-items: center;
+            gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header-emblem {
+            width: 56px; height: 56px; background: #1a3a6b;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 24px;
+        }
+        .header-text h1 { font-size: 18px; color: #1a3a6b; font-weight: 700; }
+        .header-text p  { font-size: 12px; color: #777; }
+        .header-right { margin-left: auto; display: flex; gap: 10px; }
+        .btn {
+            padding: 8px 16px; border-radius: 4px;
+            text-decoration: none; font-size: 13px; font-weight: 500;
+        }
+        .btn-primary { background: #1a3a6b; color: white; }
+        .btn-danger  { background: #d32f2f; color: white; }
+
+        .navbar {
+            background: #1a3a6b; padding: 0 30px; display: flex;
+        }
+        .navbar a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            padding: 12px 18px; font-size: 13px;
+            border-bottom: 3px solid transparent; transition: 0.2s;
+        }
+        .navbar a:hover, .navbar a.active {
+            color: #ffd700; border-bottom-color: #ffd700;
+        }
+
+        .page-body { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .breadcrumb { font-size: 12px; color: #666; margin-bottom: 16px; }
+        .breadcrumb span { color: #1a3a6b; }
+
+        /* Info box */
+        .info-box {
+            background: #e8f4fd; border-left: 4px solid #1a3a6b;
+            padding: 12px 16px; border-radius: 0 6px 6px 0;
+            font-size: 13px; color: #333; margin-bottom: 20px;
+        }
+
+        /* No duplicates */
+        .no-dup {
+            background: #e8f5e9; border-left: 4px solid #2e7d32;
+            padding: 16px 20px; border-radius: 0 8px 8px 0;
+            font-size: 14px; color: #1b5e20;
+        }
+
+        /* Group card */
+        .group-card {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden; margin-bottom: 20px;
+        }
+        .group-header {
+            background: #fff8e1; border-bottom: 1px solid #ffe082;
+            padding: 12px 18px; display: flex;
+            align-items: center; gap: 10px;
+        }
+        .group-header h3 { font-size: 14px; color: #e65100; }
+        .group-count {
+            background: #f77f00; color: white;
+            padding: 2px 8px; border-radius: 20px; font-size: 12px;
+        }
+        .group-body { padding: 0; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #f5f7fa; color: #333;
+            padding: 10px 14px; font-size: 12px; font-weight: 600;
+            text-align: left; border-bottom: 1px solid #eee;
+        }
+        tbody td {
+            padding: 10px 14px; font-size: 13px;
+            border-bottom: 1px solid #f5f5f5; vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #fafafa; }
+
+        .footer {
+            background: #1a3a6b; color: rgba(255,255,255,0.7);
+            text-align: center; padding: 14px; font-size: 12px; margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-ribbon">🇮🇳 Government of Telangana — Admin Panel</div>
+
+<div class="header">
+    <div class="header-emblem">🏛</div>
+    <div class="header-text">
+        <h1>Duplicate Complaints Overview</h1>
+        <p>Admin Dashboard — Government of Telangana</p>
+    </div>
+    <div class="header-right">
+        <a href="/admin"   class="btn btn-primary">← Back to Dashboard</a>
+        <a href="/logout"  class="btn btn-danger">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="navbar">
+    <a href="/admin">📋 All Complaints</a>
+    <a href="/analytics">📈 Analytics</a>
+    <a href="/duplicates" class="active">🔁 Duplicates</a>
+    <a href="/">🏠 Citizen Portal</a>
+</div>
+
+<div class="page-body">
+
+    <div class="breadcrumb">
+        Admin → <span>Duplicate Complaints</span>
+    </div>
+
+    <div class="info-box">
+        <strong>ℹ️ About Duplicate Detection:</strong>
+        Complaints with 65%+ text similarity are grouped together.
+        This helps identify widespread issues affecting multiple citizens
+        and prioritize resolution.
+    </div>
+
+    {% if groups %}
+        <h3 style="font-size:15px; color:#333; margin-bottom:16px;">
+            ⚠️ Found {{ groups|length }} group(s) of similar complaints:
+        </h3>
+
+        {% for group in groups %}
+        <div class="group-card">
+            <div class="group-header">
+                <h3>⚠️ Similar Complaint Group</h3>
+                <span class="group-count">{{ group|length }} complaints</span>
+            </div>
+            <div class="group-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in group %}
+                        <tr>
+                            <td><b>#{{ c[0] }}</b></td>
+                            <td>{{ c[1] }}</td>
+                            <td style="color:#555;">
+                                {{ c[2][:100] if c[2] else '—' }}
+                                {% if c[2] and c[2]|length > 100 %}...{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="no-dup">
+            ✅ No duplicate complaints found! All complaints appear to be unique.
+        </div>
+    {% endif %}
+
+</div>
+
+<div class="footer">© 2024 Government of Telangana | Public Grievance Redressal Portal</div>
+
+</body>
+</html>

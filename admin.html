@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard — Grievance Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=Noto+Sans+Telugu&family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans', sans-serif; background: #f0f4f8; min-height: 100vh; }
+
+        .top-ribbon {
+            background: #1a3a6b; color: white;
+            font-size: 12px; padding: 4px 20px;
+            display: flex; justify-content: space-between;
+        }
+        .header {
+            background: white; border-bottom: 4px solid #f77f00;
+            padding: 12px 30px; display: flex;
+            align-items: center; gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .header-emblem {
+            width: 56px; height: 56px; background: #1a3a6b;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 24px;
+        }
+        .header-text h1 { font-size: 18px; color: #1a3a6b; font-weight: 700; }
+        .header-text p  { font-size: 12px; color: #777; }
+        .header-right { margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+        .header-btn {
+            padding: 8px 14px; border-radius: 4px;
+            text-decoration: none; font-size: 13px; font-weight: 500;
+            border: none; cursor: pointer;
+            font-family: 'Noto Sans', sans-serif;
+        }
+        .btn-primary { background: #1a3a6b; color: white; }
+        .btn-primary:hover { background: #0d2444; }
+        .btn-warning { background: #f77f00; color: white; }
+        .btn-warning:hover { background: #e65100; }
+        .btn-danger  { background: #d32f2f; color: white; }
+        .btn-danger:hover { background: #b71c1c; }
+        .btn-green   { background: #2e7d32; color: white; }
+        .btn-green:hover { background: #1b5e20; }
+
+        .navbar {
+            background: #1a3a6b; padding: 0 30px; display: flex; flex-wrap: wrap;
+        }
+        .navbar a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            padding: 12px 16px; font-size: 13px;
+            border-bottom: 3px solid transparent; transition: 0.2s;
+        }
+        .navbar a:hover, .navbar a.active {
+            color: #ffd700; border-bottom-color: #ffd700;
+        }
+
+        .page-body { padding: 24px 20px; }
+
+        /* Stat cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px; margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white; border-radius: 8px;
+            padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-left: 4px solid #1a3a6b;
+        }
+        .stat-card.orange { border-left-color: #f77f00; }
+        .stat-card.blue   { border-left-color: #1565c0; }
+        .stat-card.green  { border-left-color: #2e7d32; }
+        .stat-card.red    { border-left-color: #d32f2f; }
+        .stat-card.purple { border-left-color: #6a1b9a; }
+        .stat-card h3 { font-size: 26px; font-weight: 700; color: #1a3a6b; }
+        .stat-card.orange h3 { color: #f77f00; }
+        .stat-card.blue   h3 { color: #1565c0; }
+        .stat-card.green  h3 { color: #2e7d32; }
+        .stat-card.red    h3 { color: #d32f2f; }
+        .stat-card.purple h3 { color: #6a1b9a; }
+        .stat-card p { font-size: 12px; color: #666; margin-top: 4px; }
+
+        /* Table */
+        .table-card {
+            background: white; border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;
+        }
+        .table-card-header {
+            background: #1a3a6b; color: white;
+            padding: 14px 20px; display: flex;
+            justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .table-card-header h2 { font-size: 15px; font-weight: 600; }
+        .refresh-btn {
+            background: rgba(255,255,255,0.2); color: white;
+            padding: 6px 12px; border-radius: 4px;
+            text-decoration: none; font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .refresh-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #f5f7fa; color: #333;
+            padding: 10px 11px; font-size: 11px;
+            font-weight: 600; text-align: left;
+            border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+        tbody td {
+            padding: 9px 11px; font-size: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+            font-family: 'Noto Sans Devanagari','Noto Sans Telugu','Noto Sans',sans-serif;
+        }
+        tbody tr:hover { background: #f8fafc; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* Priority row highlight */
+        tbody tr.priority-critical { background: #fff5f5; }
+        tbody tr.priority-critical:hover { background: #ffeaea; }
+        tbody tr.priority-high { background: #fffbf0; }
+        tbody tr.priority-high:hover { background: #fff5e0; }
+
+        /* Badges */
+        .badge {
+            padding: 3px 8px; border-radius: 20px;
+            font-size: 11px; font-weight: 600;
+            color: white; white-space: nowrap; display: inline-block;
+        }
+        .badge-urgent   { background: #d32f2f; }
+        .badge-neutral  { background: #f77f00; }
+        .badge-positive { background: #2e7d32; }
+        .badge-pending  { background: #f77f00; }
+        .badge-progress { background: #1565c0; }
+        .badge-resolved { background: #2e7d32; }
+        .badge-lang {
+            background: #e8eaf6; color: #3949ab;
+            padding: 3px 7px; border-radius: 4px;
+            font-size: 11px; display: inline-block;
+        }
+        .badge-dup {
+            background: #fdecea; color: #c62828;
+            padding: 3px 7px; border-radius: 4px;
+            font-size: 11px; font-weight: 600; display: inline-block;
+        }
+
+        /* Priority badge */
+        .priority-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+        }
+        .p-critical { background: #fdecea; color: #b71c1c; border: 1px solid #ef9a9a; }
+        .p-high     { background: #fff8e1; color: #e65100; border: 1px solid #ffcc80; }
+        .p-medium   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+        .p-low      { background: #e8eaf6; color: #283593; border: 1px solid #9fa8da; }
+
+        /* Priority score circle */
+        .score-circle {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 50%;
+            font-size: 12px; font-weight: 700; color: white;
+        }
+        .score-critical { background: #d32f2f; }
+        .score-high     { background: #f77f00; }
+        .score-medium   { background: #388e3c; }
+        .score-low      { background: #1565c0; }
+
+        /* SLA badge */
+        .sla-badge {
+            padding: 3px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 600;
+            display: inline-block; white-space: nowrap;
+        }
+        .sla-overdue  { background: #fdecea; color: #b71c1c; border: 1px solid #ef9a9a; }
+        .sla-duesoon  { background: #fff8e1; color: #e65100; border: 1px solid #ffcc80; }
+        .sla-ontime   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+        .sla-resolved { background: #e8eaf6; color: #283593; border: 1px solid #9fa8da; }
+
+        /* Image */
+        .complaint-img {
+            width: 60px; height: 44px;
+            object-fit: cover; border-radius: 4px;
+            cursor: pointer; border: 1px solid #ddd;
+            transition: transform 0.2s;
+        }
+        .complaint-img:hover { transform: scale(1.15); }
+        .no-data { color: #bbb; font-size: 11px; }
+
+        .map-btn {
+            background: #1a3a6b; color: white;
+            padding: 4px 8px; border-radius: 4px;
+            text-decoration: none; font-size: 11px;
+            white-space: nowrap; display: inline-block;
+        }
+        .map-btn:hover { background: #0d2444; }
+
+        .status-select {
+            padding: 4px 6px; border-radius: 4px;
+            border: 1px solid #ccc; font-size: 11px;
+            font-family: 'Noto Sans', sans-serif;
+            cursor: pointer; background: white;
+        }
+
+        .footer {
+            background: #1a3a6b; color: rgba(255,255,255,0.7);
+            text-align: center; padding: 14px;
+            font-size: 12px; margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-ribbon">
+    <span>🇮🇳 Government of Telangana — Admin Panel</span>
+    <span>Logged in as: Admin</span>
+</div>
+
+<div class="header">
+    <div class="header-emblem">🏛</div>
+    <div class="header-text">
+        <h1>Public Grievance Redressal Portal</h1>
+        <p>Admin Dashboard — Government of Telangana</p>
+    </div>
+    <div class="header-right">
+        <a href="/refresh_sla"  class="header-btn btn-green">🔄 Refresh SLA</a>
+        <a href="/analytics"    class="header-btn btn-warning">📈 Analytics</a>
+        <a href="/duplicates"   class="header-btn btn-primary">🔁 Duplicates</a>
+        <a href="/logout"       class="header-btn btn-danger">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="navbar">
+    <a href="/admin"       class="active">📋 Complaints</a>
+    <a href="/analytics">📈 Analytics</a>
+    <a href="/duplicates">🔁 Duplicates</a>
+    <a href="/refresh_sla">🔄 Refresh SLA</a>
+    <a href="/">🏠 Citizen Portal</a>
+</div>
+
+<div class="page-body">
+
+    <!-- Stat cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <h3>{{ complaints|length }}</h3>
+            <p>📋 Total</p>
+        </div>
+        <div class="stat-card orange">
+            <h3>
+                {% set ns = namespace(c=0) %}
+                {% for c in complaints %}{% if c[8] == 'Pending' or not c[8] %}{% set ns.c = ns.c+1 %}{% endif %}{% endfor %}
+                {{ ns.c }}
+            </h3>
+            <p>🟡 Pending</p>
+        </div>
+        <div class="stat-card blue">
+            <h3>
+                {% set ns2 = namespace(c=0) %}
+                {% for c in complaints %}{% if c[8] == 'In Progress' %}{% set ns2.c = ns2.c+1 %}{% endif %}{% endfor %}
+                {{ ns2.c }}
+            </h3>
+            <p>⚙️ In Progress</p>
+        </div>
+        <div class="stat-card green">
+            <h3>
+                {% set ns3 = namespace(c=0) %}
+                {% for c in complaints %}{% if c[8] == 'Resolved' %}{% set ns3.c = ns3.c+1 %}{% endif %}{% endfor %}
+                {{ ns3.c }}
+            </h3>
+            <p>✅ Resolved</p>
+        </div>
+        <div class="stat-card red">
+            <h3>
+                {% set ns4 = namespace(c=0) %}
+                {% for c in complaints %}{% if c[13] == 1 %}{% set ns4.c = ns4.c+1 %}{% endif %}{% endfor %}
+                {{ ns4.c }}
+            </h3>
+            <p>🔁 Duplicates</p>
+        </div>
+        <div class="stat-card purple">
+            <h3>
+                {% set ns5 = namespace(c=0) %}
+                {% for c in complaints %}{% if 'Overdue' in (c[18] or '') %}{% set ns5.c = ns5.c+1 %}{% endif %}{% endfor %}
+                {{ ns5.c }}
+            </h3>
+            <p>❌ SLA Overdue</p>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2>📋 All Grievances ({{ complaints|length }} total)</h2>
+            <a href="/refresh_sla" class="refresh-btn">🔄 Refresh SLA Status</a>
+        </div>
+        <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Priority</th>
+                    <th>Duplicate</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Contact</th>
+                    <th>Sentiment</th>
+                    <th>Image</th>
+                    <th>Language</th>
+                    <th>Status</th>
+                    <th>SLA Deadline</th>
+                    <th>SLA Status</th>
+                    <th>Date</th>
+                    <th>Update</th>
+                    <th>Address</th>
+                    <th>Map</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in complaints %}
+            <tr class="{% if c[16] == 'Critical' %}priority-critical{% elif c[16] == 'High' %}priority-high{% endif %}">
+
+                <!-- c[0]=id,   c[1]=title,        c[2]=description   -->
+                <!-- c[3]=cat,  c[4]=contact,       c[5]=sentiment     -->
+                <!-- c[6]=img,  c[7]=language,      c[8]=status        -->
+                <!-- c[9]=date, c[10]=address,      c[11]=latitude     -->
+                <!-- c[12]=lng, c[13]=is_duplicate, c[14]=duplicate_of -->
+                <!-- c[15]=priority_score,          c[16]=priority_label -->
+                <!-- c[17]=sla_deadline,            c[18]=sla_status   -->
+
+                <!-- ID -->
+                <td><b>#{{ c[0] }}</b></td>
+
+                <!-- Priority -->
+                <td>
+                    <span class="score-circle
+                        {% if c[16] == 'Critical' %}score-critical
+                        {% elif c[16] == 'High' %}score-high
+                        {% elif c[16] == 'Medium' %}score-medium
+                        {% else %}score-low{% endif %}">
+                        {{ c[15] or 1 }}
+                    </span>
+                    <span class="priority-badge
+                        {% if c[16] == 'Critical' %}p-critical
+                        {% elif c[16] == 'High' %}p-high
+                        {% elif c[16] == 'Medium' %}p-medium
+                        {% else %}p-low{% endif %}"
+                        style="margin-left:4px;">
+                        {{ c[16] or 'Low' }}
+                    </span>
+                </td>
+
+                <!-- Duplicate -->
+                <td>
+                    {% if c[13] == 1 %}
+                        <span class="badge-dup">⚠️ #{{ c[14] }}</span>
+                    {% else %}
+                        <span class="no-data">—</span>
+                    {% endif %}
+                </td>
+
+                <!-- Title -->
+                <td style="max-width:130px; font-size:12px;">{{ c[1] }}</td>
+
+                <!-- Category -->
+                <td><b style="color:#1a3a6b; font-size:12px;">{{ c[3] }}</b></td>
+
+                <!-- Contact -->
+                <td style="font-size:12px;">{{ c[4] }}</td>
+
+                <!-- Sentiment -->
+                <td>
+                    {% if 'Urgent' in (c[5] or '') %}
+                        <span class="badge badge-urgent">🔴</span>
+                    {% elif 'Positive' in (c[5] or '') %}
+                        <span class="badge badge-positive">😊</span>
+                    {% else %}
+                        <span class="badge badge-neutral">🟡</span>
+                    {% endif %}
+                </td>
+
+                <!-- Image -->
+                <td>
+                    {% if c[6] and c[6] != 'None' and c[6] != '' %}
+                        <a href="/static/uploads/{{ c[6] }}" target="_blank">
+                            <img src="/static/uploads/{{ c[6] }}"
+                                 class="complaint-img"
+                                 onerror="this.parentElement.innerHTML='<span class=no-data>N/A</span>'">
+                        </a>
+                    {% else %}
+                        <span class="no-data">—</span>
+                    {% endif %}
+                </td>
+
+                <!-- Language -->
+                <td>
+                    <span class="badge-lang">
+                        {% if c[7] == 'Telugu' %}🇮🇳 Te
+                        {% elif c[7] == 'Hindi' %}🇮🇳 Hi
+                        {% else %}🌐 En{% endif %}
+                    </span>
+                </td>
+
+                <!-- Status -->
+                <td>
+                    {% if c[8] == 'Resolved' %}
+                        <span class="badge badge-resolved">✅</span>
+                    {% elif c[8] == 'In Progress' %}
+                        <span class="badge badge-progress">⚙️</span>
+                    {% else %}
+                        <span class="badge badge-pending">🟡</span>
+                    {% endif %}
+                    <span style="font-size:11px; color:#555;">{{ c[8] or 'Pending' }}</span>
+                </td>
+
+                <!-- SLA Deadline -->
+                <td style="font-size:11px; color:#666; white-space:nowrap;">
+                    {{ c[17] or 'N/A' }}
+                </td>
+
+                <!-- SLA Status -->
+                <td>
+                    {% set sla = c[18] or 'On Time' %}
+                    {% if 'Overdue' in sla %}
+                        <span class="sla-badge sla-overdue">{{ sla }}</span>
+                    {% elif 'Due Soon' in sla %}
+                        <span class="sla-badge sla-duesoon">{{ sla }}</span>
+                    {% elif 'Resolved' in sla %}
+                        <span class="sla-badge sla-resolved">{{ sla }}</span>
+                    {% else %}
+                        <span class="sla-badge sla-ontime">{{ sla }}</span>
+                    {% endif %}
+                </td>
+
+                <!-- Date -->
+                <td style="font-size:11px; white-space:nowrap; color:#888;">
+                    {{ c[9] or 'N/A' }}
+                </td>
+
+                <!-- Update -->
+                <td>
+                    <form method="POST" action="/update_status/{{ c[0] }}">
+                        <select name="status" class="status-select"
+                                onchange="this.form.submit()">
+                            <option value="Pending"
+                                {% if c[8] == 'Pending' or not c[8] %}selected{% endif %}>
+                                🟡 Pending
+                            </option>
+                            <option value="In Progress"
+                                {% if c[8] == 'In Progress' %}selected{% endif %}>
+                                ⚙️ In Progress
+                            </option>
+                            <option value="Resolved"
+                                {% if c[8] == 'Resolved' %}selected{% endif %}>
+                                ✅ Resolved
+                            </option>
+                        </select>
+                    </form>
+                </td>
+
+                <!-- Address -->
+                <td style="max-width:120px; font-size:11px;
+                           color:#555; word-break:break-word;">
+                    {{ (c[10] or 'N/A')[:50] }}
+                </td>
+
+                <!-- Map -->
+                <td>
+                    {% if c[11] and c[12] %}
+                        <a href="https://www.google.com/maps?q={{ c[11] }},{{ c[12] }}"
+                           target="_blank" class="map-btn">🗺</a>
+                    {% else %}
+                        <span class="no-data">—</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">© 2024 Government of Telangana | Public Grievance Redressal Portal</div>
+
+</body>
+</html>
