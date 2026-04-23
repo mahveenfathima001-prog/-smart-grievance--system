@@ -66,5 +66,5 @@ networkx==3.2.1
 typing_extensions==4.8.0
 tzdata==2023.3
 fsspec==2023.10.0
-
+gunicorn==21.2.0
 
