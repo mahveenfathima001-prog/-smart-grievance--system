@@ -1,0 +1,10 @@
+# .gitignore
+grievances.db
+*.pkl
+__pycache__/
+*.pyc
+venv/
+.env
+static/uploads/*
+*.egg-info/
+.DS_Store
