@@ -17,7 +17,7 @@ import traceback
 # STEP 1 — CREATE APP
 # ============================================================
 app = Flask(__name__)
-app.secret_key =  os.environ.get("SECRET_KEY", "grievance2024secretkey")
+app.secret_key = os.environ.get("SECRET_KEY", "grievance2024secretkey")
 
 # ============================================================
 # STEP 2 — CONFIGURE APP
@@ -55,6 +55,11 @@ sia = SentimentIntensityAnalyzer()
 # ============================================================
 # STEP 5 — BERT CLASSIFIER
 # ============================================================
+
+# ✅ Always define these first so they exist even if BERT loads
+old_model    = None
+model_loaded = False
+
 try:
     from classifier import classify_with_confidence, classify_grievance
     bert_loaded = True
@@ -155,13 +160,13 @@ def detect_and_translate(text):
             english_text = GoogleTranslator(
                 source=lang, target='en'
             ).translate(text)
-            print(f"🌐 Detected: {lang_name} | Translated: {english_text}")
+            print(f"Detected: {lang_name} | Translated: {english_text}")
         else:
             english_text = text
-            print(f"🌐 Language: English")
+            print(f"Language: English")
         return english_text, lang_name
     except Exception as e:
-        print(f"⚠️ Language detection failed: {e}")
+        print(f"Language detection failed: {e}")
         return text, "Unknown"
 
 
@@ -171,14 +176,14 @@ def predict_category(text):
             result     = classify_with_confidence(text)
             category   = result['category']
             confidence = result['confidence']
-            print(f"🤖 BERT → {category} ({confidence}%)")
+            print(f"BERT: {category} ({confidence}%)")
             return category, confidence
         except Exception as e:
-            print(f"⚠️ BERT failed: {e}")
+            print(f"BERT failed: {e}")
 
     if model_loaded and old_model:
         category = old_model.predict([text])[0]
-        print(f"📊 Naive Bayes → {category}")
+        print(f"Naive Bayes: {category}")
         return category, None
 
     return "General", None
@@ -237,9 +242,8 @@ def submit():
     full_text   = title + " " + description
 
     print(f"\n{'='*50}")
-    print(f"📋 New complaint received")
-    print(f"📝 Title: {title}")
-    print(f"📱 Contact: {contact}")
+    print(f"New complaint: {title}")
+    print(f"Contact: {contact}")
     print(f"{'='*50}")
 
     # Detect language & translate
@@ -248,17 +252,17 @@ def submit():
     # Sentiment
     score = sia.polarity_scores(english_text)
     if score['compound'] >= 0.3:
-        sentiment = "Positive 😊"
+        sentiment = "Positive"
     elif score['compound'] <= -0.3:
-        sentiment = "Urgent 🔴"
+        sentiment = "Urgent"
     else:
-        sentiment = "Neutral 🟡"
-    print(f"😊 Sentiment: {sentiment}")
+        sentiment = "Neutral"
+    print(f"Sentiment: {sentiment}")
 
     # Category
     category, confidence = predict_category(english_text)
     department           = get_department(category)
-    print(f"📂 Category: {category} | Dept: {department}")
+    print(f"Category: {category} | Dept: {department}")
 
     # Duplicate detection
     is_duplicate = 0
@@ -269,7 +273,7 @@ def submit():
         if duplicates:
             is_duplicate = 1
             duplicate_of = duplicates[0]['id']
-            print(f"⚠️ Duplicate! Similar to #{duplicate_of}")
+            print(f"Duplicate! Similar to #{duplicate_of}")
 
     # Image upload
     image_filename = None
@@ -282,7 +286,7 @@ def submit():
                 app.config["UPLOAD_FOLDER"], unique_name
             ))
             image_filename = unique_name
-            print(f"📷 Image saved: {unique_name}")
+            print(f"Image saved: {unique_name}")
 
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     status     = "Pending"
@@ -299,8 +303,8 @@ def submit():
         )
         sla_deadline   = calculate_sla_deadline(category, created_at)
         sla_status_val = check_sla_status(sla_deadline, status)
-        print(f"🔢 Priority: {priority_score}/10 ({priority_label})")
-        print(f"⏱ SLA Deadline: {sla_deadline}")
+        print(f"Priority: {priority_score}/10 ({priority_label})")
+        print(f"SLA Deadline: {sla_deadline}")
 
     # Save to DB
     conn   = sqlite3.connect('grievances.db')
@@ -319,28 +323,28 @@ def submit():
     complaint_id = cursor.lastrowid
     conn.commit()
     conn.close()
-    print(f"💾 Saved to DB: #{complaint_id}")
+    print(f"Saved to DB: #{complaint_id}")
 
     # Send WhatsApp notification
-    print(f"\n📱 Notification check:")
+    print(f"\nNotification check:")
     print(f"   notifications_enabled = {notifications_enabled}")
     print(f"   contact = '{contact}'")
 
     if notifications_enabled and contact:
-        print("📤 Sending WhatsApp notification...")
+        print("Sending WhatsApp notification...")
         try:
             message = complaint_submitted_msg(
                 complaint_id, category, department
             )
             notify_citizen(contact, "Complaint Submitted", message)
         except Exception as e:
-            print(f"⚠️ Notification error: {e}")
+            print(f"Notification error: {e}")
             traceback.print_exc()
     else:
         if not notifications_enabled:
-            print("⚠️ Skipped — notifications disabled!")
+            print("Skipped — notifications disabled!")
         if not contact:
-            print("⚠️ Skipped — no contact number!")
+            print("Skipped — no contact number!")
 
     print(f"{'='*50}\n")
 
@@ -365,11 +369,11 @@ def login():
         if username == ADMIN_USERNAME and \
            check_password_hash(ADMIN_PASSWORD_HASH, password):
             login_user(User(id=1))
-            print("✅ Admin logged in")
+            print("Admin logged in")
             return redirect(url_for('admin'))
         else:
-            flash("❌ Invalid username or password!")
-            print("❌ Failed login attempt")
+            flash("Invalid username or password!")
+            print("Failed login attempt")
     return render_template('login.html')
 
 
@@ -416,18 +420,18 @@ def update_status(complaint_id):
     conn.commit()
     conn.close()
 
-    print(f"✅ Complaint #{complaint_id} → {new_status}")
+    print(f"Complaint #{complaint_id} updated to {new_status}")
 
     # Notify citizen
     if notifications_enabled and complaint:
-        print(f"📤 Sending status update to {complaint[1]}...")
+        print(f"Sending status update to {complaint[1]}...")
         try:
             message = status_updated_msg(
                 complaint_id, new_status, complaint[0]
             )
             notify_citizen(complaint[1], "Status Update", message)
         except Exception as e:
-            print(f"⚠️ Notification error: {e}")
+            print(f"Notification error: {e}")
             traceback.print_exc()
 
     return redirect(url_for('admin'))
@@ -447,7 +451,7 @@ def track():
         ).fetchone()
         conn.close()
         if not complaint:
-            error = f"❌ No complaint found with ID: {complaint_id}"
+            error = f"No complaint found with ID: {complaint_id}"
     return render_template('track.html', complaint=complaint, error=error)
 
 
@@ -510,7 +514,7 @@ def refresh_sla():
             )
         conn.commit()
         conn.close()
-        print("✅ SLA statuses refreshed!")
+        print("SLA statuses refreshed!")
     return redirect(url_for('admin'))
 
 
@@ -526,7 +530,7 @@ def debug():
 # --- File too large ---
 @app.errorhandler(413)
 def too_large(e):
-    return "❌ File too large! Maximum size is 5MB.", 413
+    return "File too large! Maximum size is 5MB.", 413
 
 
 # ============================================================
@@ -535,4 +539,4 @@ def too_large(e):
 if __name__ == "__main__":
     init_db()
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)
